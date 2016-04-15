@@ -1,42 +1,31 @@
 #!/usr/bin/env nextflow
-params.in = "$baseDir/data/sample.fa"
-sequences = file(params.in)
- 
-/*
- * split a fasta file in multiple files
- */
-process splitSequences {
- 
-    input:
-    file 'input.fa' from sequences
- 
+
+params.str = 'Hello world!'
+
+process splitLetters {
+
     output:
-    file 'seq_*' into records
- 
+    file 'chunk_*' into letters mode flatten
+
     """
-    awk '/^>/{f="seq_"++d} {print > f}' < input.fa
+    printf '${params.str}' | split -b 6 - chunk_
     """
- 
 }
- 
-/*
- * Simple reverse the sequences
- */
-process reverse {
- 
+
+
+process convertToUpper {
+
     input:
-    file x from records
-     
+    file x from letters
+
     output:
     stdout result
- 
+
     """
-    cat $x | rev
+    cat $x | tr '[a-z]' '[A-Z]'
     """
 }
- 
-/*
- * print the channel content
- */
-result.subscribe { println it }
 
+result.subscribe {
+    println it.trim()
+}
